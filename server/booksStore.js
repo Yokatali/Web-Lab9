@@ -75,6 +75,8 @@ let books = [
   },
 ];
 
+let nextId = 9;
+
 
 export async function getAllBooks() {
     await delay();
@@ -98,4 +100,33 @@ export async function findDuplicate(title, author, excludeId = null) {
             book.author.toLowerCase() === wantedAuthor
         ) ?? null
     );
+}
+
+export async function addBook(data) {
+    await delay();
+    const book = { ...data, id: nextId };
+    nextId = nextId + 1;
+    books = [...books,book];
+    return book;
+}
+
+export async function replaceBook(id, data) {
+    await delay();
+    const existing = books.find((book) => book.id === id);
+    if (!existing) {
+        return null;
+    }
+    const updated = { ...data, id };
+    books = books.map((book) => (book.id === id ? updated : book));
+    return updated;
+}
+
+export async function removeBook(id) {
+    await delay();
+    const exists = books.some((book) => book.id === id);
+    if (!exists) {
+        return false;
+    }
+    books = books.filter((book) => book.id !== id);
+    return true;
 }
