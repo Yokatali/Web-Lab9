@@ -81,3 +81,74 @@ export function validateBook(input) {
     },
   };
 }
+
+const SORT_FIELDS = ["title", "author", "year", "rating"];
+
+export function parseListQuery(query) {
+  const keys = ["genre", "read", "q", "sort", "order", "limit", "page"];
+  for (const key of keys) {
+    if (Array.isArray(query[key])) {
+      return { error: `${key} must not be repeated` };
+    }
+  }
+
+  const options = {
+    genre: null,
+    read: null,
+    q: null,
+    sort: "id",
+    order: "asc",
+    limit: 50,
+    page: 1,
+  };
+
+  if (query.genre !== undefined) {
+    if (!GENRES.includes(query.genre)) {
+      return { error: `genre must be one of: ${GENRES.join(", ")}` };
+    }
+    options.genre = query.genre;
+  }
+
+  if (query.read !== undefined) {
+    if (query.read !== "true" && query.read !== "false") {
+      return { error: "read must be true or false" };
+    }
+    options.read = query.read === "true";
+  }
+
+  if (query.q !== undefined) {
+    options.q = query.q.trim().toLowerCase();
+  }
+
+  if (query.sort !== undefined) {
+    if (!SORT_FIELDS.includes(query.sort)) {
+      return { error: `sort must be one of: ${SORT_FIELDS.join(", ")}` };
+    }
+    options.sort = query.sort;
+  }
+
+  if (query.order !== undefined) {
+    if (query.order !== "asc" && query.order !== "desc") {
+      return { error: "order must be asc or desc" };
+    }
+    options.order = query.order;
+  }
+
+  if (query.limit !== undefined) {
+    const limit = parseId(query.limit);
+    if (limit === null || limit > 50) {
+      return { error: "limit must be an integer from 1 to 50" };
+    }
+    options.limit = limit;
+  }
+
+  if (query.page !== undefined) {
+    const page = parseId(query.page);
+    if (page === null) {
+      return { error: "page must be a positive integer" };
+    }
+    options.page = page;
+  }
+
+  return { value: options };
+}

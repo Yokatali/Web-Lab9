@@ -8,7 +8,7 @@ import {
   replaceBook,
   removeBook,
 } from "./booksStore.js";
-import { parseId, validateBook } from "./validate.js";
+import { parseId, validateBook, parseListQuery } from "./validate.js";
 
 const PORT = process.env.PORT || 3000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
@@ -19,6 +19,10 @@ app.use(cors({ origin: CLIENT_ORIGIN }));
 app.use(express.json());
 
 app.get("/api/books", async (req, res) => {
+  const result = parseListQuery(req.query);
+  if (result.error) {
+    return res.status(400).json({ error: result.error });
+  }
   const books = await getAllBooks();
   res.status(200).json(books);
 });
