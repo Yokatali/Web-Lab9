@@ -72,7 +72,32 @@ app.get("/api/books/:id", async (req, res) => {
   res.status(200).json(book);
 });
 
-
+app.get("/api/stats", async (req, res) => {
+  const books = await getAllBooks();
+  const readBooks = books.filter((book) => book.read);
+  const rated = books.filter((book) => book.rating !== null);
+  const averageRating =
+    rated.length === 0
+      ? null
+      : Math.round(
+          (rated.reduce((sum, book) => sum + book.rating, 0) / rated.length) *
+            10,
+        ) / 10;
+  const byGenre = books.reduce(
+    (counts, book) => ({
+      ...counts,
+      [book.genre]: (counts[book.genre] ?? 0) + 1,
+    }),
+    {},
+  );
+  res.status(200).json({
+    total: books.length,
+    read: readBooks.length,
+    unread: books.length - readBooks.length,
+    averageRating,
+    byGenre,
+  });
+});
 
 app.put("/api/books/:id", async (req, res) => {
   const id = parseId(req.params.id);
