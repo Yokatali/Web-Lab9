@@ -23,8 +23,17 @@ app.get("/api/books", async (req, res) => {
   if (result.error) {
     return res.status(400).json({ error: result.error });
   }
+  const { genre, read, q } = result.value;
   const books = await getAllBooks();
-  res.status(200).json(books);
+  const filtered = books.filter(
+    (book) =>
+    (genre === null || book.genre === genre) &&
+    (read === null || book.read === read) &&
+    (q === null ||
+      book.title.toLowerCase().includes(q) ||
+      book.author.toLowerCase().includes(q)),
+    );
+  res.status(200).json(filtered);
 });
 
 app.put("/api/books/:id", async (req, res) => {
