@@ -18,22 +18,46 @@ const app = express();
 app.use(cors({ origin: CLIENT_ORIGIN }));
 app.use(express.json());
 
+function compareBooks(a, b, sort, order) {
+  if (sort === "rating") {
+    if (a.rating === null && b.rating === null) {
+      return 0;
+    }
+
+    if (a.rating === null) {
+      return 1;
+    }
+
+    if (b.rating === null) {
+      return -1;
+    }
+  }
+
+  const difference =
+    sort === "title" || sort === "author"
+      ? a[sort].localeCompare(b[sort])
+      : a[sort] - b[sort];
+  return order === "asc" ? difference : -difference;
+}
+
 app.get("/api/books", async (req, res) => {
   const result = parseListQuery(req.query);
   if (result.error) {
     return res.status(400).json({ error: result.error });
   }
-  const { genre, read, q } = result.value;
+  const { genre, read, q, sort, order, limit, page } = result.value;
   const books = await getAllBooks();
   const filtered = books.filter(
     (book) =>
-    (genre === null || book.genre === genre) &&
-    (read === null || book.read === read) &&
-    (q === null ||
-      book.title.toLowerCase().includes(q) ||
-      book.author.toLowerCase().includes(q)),
-    );
-  res.status(200).json(filtered);
+      (genre === null || book.genre === genre) &&
+      (read === null || book.read === read) &&
+      (q === null ||
+        book.title.toLowerCase().includes(q) ||
+        book.author.toLowerCase().includes(q)),
+  );
+  const sorted = [...filtered].sort((a, b) => compareBooks(a, b, sort, order));
+  const start = (page - 1) * limit;
+  res.status(200).json(sorted.slice(start, start + limit));
 });
 
 app.put("/api/books/:id", async (req, res) => {
