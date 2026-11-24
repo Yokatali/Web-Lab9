@@ -192,11 +192,6 @@ app.delete("/api/books/:id", async (req, res) => {
   res.status(204).end();
 });
 
-app.get("/api/crash", async (req, res) => {
-  await getAllBooks();
-  throw new Error("Deliberate crash");
-});
-
 app.use("/api", (req, res) => {
   res.status(404).json({ error: "Not found" });
 });
