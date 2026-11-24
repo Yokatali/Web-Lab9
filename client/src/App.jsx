@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getBooks, getStats } from "./api/books.js";
+import { getBooks, getStats, createBook } from "./api/books.js";
 import BookFilters from "./components/BookFilters.jsx";
+import BookForm from "./components/BookForm.jsx";
 import BookList from "./components/BookList.jsx";
 import StatsPanel from "./components/StatsPanel.jsx";
 import "./App.css";
@@ -14,6 +15,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
   const [statsError, setStatsError] = useState(null);
+  const [statsVersion, setStatsVersion] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,17 +42,28 @@ export default function App() {
         setStatsError(null);
       })
       .catch((err) => setStatsError(err.message));
-  }, []);
+  }, [statsVersion]);
 
   function handleFiltersChange(nextFilters) {
     setFilters(nextFilters);
     setLoading(true);
   }
 
+  function refreshStats() {
+    setStatsVersion((version) => version + 1);
+  }
+
+  async function handleCreate(book) {
+    const created = await createBook(book);
+    setBooks((current) => [...current, created]);
+    refreshStats();
+  }
+
   return (
     <main className="app">
       <h1>Reading List</h1>
       <StatsPanel stats={stats} error={statsError} />
+      <BookForm onSubmit={handleCreate} />
       <BookFilters filters={filters} onChange={handleFiltersChange} />
       <BookList books={books} loading={loading} error={error} />
     </main>
