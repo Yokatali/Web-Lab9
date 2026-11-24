@@ -8,6 +8,7 @@ export default function BookList({
   onEdit,
   onToggleRead,
   onRate,
+  onDelete,
 }) {
   if (loading) {
     return <p className="status">Loading books...</p>;
@@ -28,6 +29,7 @@ export default function BookList({
           onEdit={onEdit}
           onToggleRead={onToggleRead}
           onRate={onRate}
+          onDelete={onDelete}
         />
       ))}
     </ul>

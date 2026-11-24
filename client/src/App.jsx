@@ -5,6 +5,7 @@ import {
   createBook,
   replaceBook,
   updateBook,
+  deleteBook,
 } from "./api/books.js";
 import BookFilters from "./components/BookFilters.jsx";
 import BookForm from "./components/BookForm.jsx";
@@ -107,6 +108,23 @@ export default function App() {
     changeBook(book.id, { rating: value === "" ? null : Number(value) });
   }
 
+  async function handleDelete(book) {
+    setBusyId(book.id);
+    setActionError(null);
+    try {
+      await deleteBook(book.id);
+      setBooks((current) => current.filter((item) => item.id !== book.id));
+      if (editingBook && editingBook.id === book.id) {
+        setEditingBook(null);
+      }
+      refreshStats();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <main className="app">
       <h1>Reading List</h1>
@@ -131,6 +149,7 @@ export default function App() {
         onEdit={handleEdit}
         onToggleRead={handleToggleRead}
         onRate={handleRate}
+        onDelete={handleDelete}
       />
     </main>
   );

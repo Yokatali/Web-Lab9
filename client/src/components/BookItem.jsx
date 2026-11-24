@@ -4,6 +4,7 @@ export default function BookItem({
   onEdit,
   onToggleRead,
   onRate,
+  onDelete,
 }) {
   return (
     <li className="book">
@@ -41,6 +42,9 @@ export default function BookItem({
         </select>
         <button type="button" disabled={busy} onClick={() => onEdit(book)}>
           Edit
+        </button>
+        <button type="button" disabled={busy} onClick={() => onDelete(book)}>
+          Delete
         </button>
       </div>
     </li>
