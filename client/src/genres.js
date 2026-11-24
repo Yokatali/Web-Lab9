@@ -1,0 +1,8 @@
+export const GENRES = [
+  "fiction",
+  "non-fiction",
+  "science",
+  "history",
+  "fantasy",
+  "other",
+];
