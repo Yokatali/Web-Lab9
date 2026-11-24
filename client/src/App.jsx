@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { getBooks, getStats, createBook, replaceBook } from "./api/books.js";
+import {
+  getBooks,
+  getStats,
+  createBook,
+  replaceBook,
+  updateBook,
+} from "./api/books.js";
 import BookFilters from "./components/BookFilters.jsx";
 import BookForm from "./components/BookForm.jsx";
 import BookList from "./components/BookList.jsx";
@@ -17,6 +23,8 @@ export default function App() {
   const [statsError, setStatsError] = useState(null);
   const [statsVersion, setStatsVersion] = useState(0);
   const [editingBook, setEditingBook] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -74,6 +82,31 @@ export default function App() {
     refreshStats();
   }
 
+  async function changeBook(id, changes) {
+    setBusyId(id);
+    setActionError(null);
+    try {
+      const updated = await updateBook(id, changes);
+      setBooks((current) =>
+        current.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      refreshStats();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function handleToggleRead(book) {
+    const changes = book.read ? { read: false, rating: null } : { read: true };
+    changeBook(book.id, changes);
+  }
+
+  function handleRate(book, value) {
+    changeBook(book.id, { rating: value === "" ? null : Number(value) });
+  }
+
   return (
     <main className="app">
       <h1>Reading List</h1>
@@ -89,11 +122,15 @@ export default function App() {
         <BookForm onSubmit={handleCreate} />
       )}
       <BookFilters filters={filters} onChange={handleFiltersChange} />
+      {actionError && <p className="status error">{actionError}</p>}
       <BookList
         books={books}
         loading={loading}
         error={error}
+        busyId={busyId}
         onEdit={handleEdit}
+        onToggleRead={handleToggleRead}
+        onRate={handleRate}
       />
     </main>
   );

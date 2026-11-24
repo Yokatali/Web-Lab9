@@ -1,4 +1,10 @@
-export default function BookItem({ book, onEdit }) {
+export default function BookItem({
+  book,
+  busy,
+  onEdit,
+  onToggleRead,
+  onRate,
+}) {
   return (
     <li className="book">
       <div className="book-info">
@@ -12,7 +18,28 @@ export default function BookItem({ book, onEdit }) {
         </span>
       </div>
       <div className="book-actions">
-        <button type="button" onClick={() => onEdit(book)}>
+        <label>
+          <input
+            type="checkbox"
+            checked={book.read}
+            disabled={busy}
+            onChange={() => onToggleRead(book)}
+          />
+          Read
+        </label>
+        <select
+          value={book.rating ?? ""}
+          disabled={busy}
+          onChange={(event) => onRate(book, event.target.value)}
+        >
+          <option value="">No rating</option>
+          {[1, 2, 3, 4, 5].map((rating) => (
+            <option key={rating} value={rating}>
+              {rating} / 5
+            </option>
+          ))}
+        </select>
+        <button type="button" disabled={busy} onClick={() => onEdit(book)}>
           Edit
         </button>
       </div>
