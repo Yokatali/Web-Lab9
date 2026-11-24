@@ -192,15 +192,23 @@ app.delete("/api/books/:id", async (req, res) => {
   res.status(204).end();
 });
 
+app.get("/api/crash", async (req, res) => {
+  await getAllBooks();
+  throw new Error("Deliberate crash");
+});
+
 app.use("/api", (req, res) => {
   res.status(404).json({ error: "Not found" });
 });
 
 app.use((err, req, res, next) => {
   if (err.type === "entity.parse.failed") {
-    return res.status(400).json({ error: "Request body contains malformed JSON" });
+    return res
+      .status(400)
+      .json({ error: "Request body contains malformed JSON" });
   }
-  next(err);
+  console.error(err);
+  res.status(500).json({ error: "Something went wrong" });
 });
 
 app.listen(PORT, () => {
