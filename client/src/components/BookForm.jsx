@@ -10,8 +10,21 @@ const EMPTY_VALUES = {
   rating: "",
 };
 
-export default function BookForm({ onSubmit }) {
-  const [values, setValues] = useState(EMPTY_VALUES);
+function toValues(book) {
+  return {
+    title: book.title,
+    author: book.author,
+    year: String(book.year),
+    genre: book.genre,
+    read: book.read,
+    rating: book.rating === null ? "" : String(book.rating),
+  };
+}
+
+export default function BookForm({ initialBook, onSubmit, onCancel }) {
+  const [values, setValues] = useState(
+    initialBook ? toValues(initialBook) : EMPTY_VALUES,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -33,7 +46,9 @@ export default function BookForm({ onSubmit }) {
         read: values.read,
         rating: values.rating === "" ? null : Number(values.rating),
       });
-      setValues(EMPTY_VALUES);
+      if (!initialBook) {
+        setValues(EMPTY_VALUES);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,7 +58,7 @@ export default function BookForm({ onSubmit }) {
 
   return (
     <form className="panel" onSubmit={handleSubmit}>
-      <h2>Add a book</h2>
+      <h2>{initialBook ? "Edit book" : "Add a book"}</h2>
       <div className="book-form">
         <label>
           Title
@@ -93,8 +108,13 @@ export default function BookForm({ onSubmit }) {
           Read
         </label>
         <button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : "Add book"}
+          {submitting ? "Saving..." : initialBook ? "Save changes" : "Add book"}
         </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel} disabled={submitting}>
+            Cancel
+          </button>
+        )}
       </div>
       {error && <p className="error">{error}</p>}
     </form>

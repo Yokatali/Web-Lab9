@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getBooks, getStats, createBook } from "./api/books.js";
+import { getBooks, getStats, createBook, replaceBook } from "./api/books.js";
 import BookFilters from "./components/BookFilters.jsx";
 import BookForm from "./components/BookForm.jsx";
 import BookList from "./components/BookList.jsx";
@@ -16,6 +16,7 @@ export default function App() {
   const [stats, setStats] = useState(null);
   const [statsError, setStatsError] = useState(null);
   const [statsVersion, setStatsVersion] = useState(0);
+  const [editingBook, setEditingBook] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -59,13 +60,41 @@ export default function App() {
     refreshStats();
   }
 
+  function handleEdit(book) {
+    setEditingBook(book);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleReplace(book) {
+    const updated = await replaceBook(editingBook.id, book);
+    setBooks((current) =>
+      current.map((item) => (item.id === updated.id ? updated : item)),
+    );
+    setEditingBook(null);
+    refreshStats();
+  }
+
   return (
     <main className="app">
       <h1>Reading List</h1>
       <StatsPanel stats={stats} error={statsError} />
-      <BookForm onSubmit={handleCreate} />
+      {editingBook ? (
+        <BookForm
+          key={editingBook.id}
+          initialBook={editingBook}
+          onSubmit={handleReplace}
+          onCancel={() => setEditingBook(null)}
+        />
+      ) : (
+        <BookForm onSubmit={handleCreate} />
+      )}
       <BookFilters filters={filters} onChange={handleFiltersChange} />
-      <BookList books={books} loading={loading} error={error} />
+      <BookList
+        books={books}
+        loading={loading}
+        error={error}
+        onEdit={handleEdit}
+      />
     </main>
   );
 }
